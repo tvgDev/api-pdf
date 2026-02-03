@@ -11,13 +11,12 @@ await fastify.register(fastifySwagger, {
   swagger: {
     info: {
       title: "API de PDF",
-      description: "API para converter URLs em arquivos PDF usando Puppeteer.",
-      version: "1.0.0",
+      description:
+        "API para converter URLs em arquivos PDF (Download ou Base64).",
+      version: "1.1.0",
     },
-    host: "localhost:3000",
-    schemes: ["http"],
+    schemes: ["http", "https"],
     consumes: ["application/json"],
-    produces: ["application/pdf"],
   },
 });
 
@@ -45,19 +44,23 @@ fastify.post(
             format: "uri",
             description: "A URL completa da página que será convertida",
           },
+          base64: {
+            type: "boolean",
+            default: false,
+            description:
+              "Se true, retorna o PDF em formato Base64 (JSON). Se false, baixa o arquivo.",
+          },
         },
       },
       response: {
         200: {
-          description: "Arquivo PDF gerado com sucesso",
-          type: "string",
-          format: "binary",
+          description: "Sucesso",
         },
       },
     },
   },
   async (request, reply) => {
-    const { url } = request.body;
+    const { url, base64 } = request.body;
 
     let browser;
 
@@ -78,6 +81,17 @@ fastify.post(
         printBackground: true,
         margin: { top: "1cm", right: "1cm", bottom: "1cm", left: "1cm" },
       });
+
+      if (base64) {
+        const bufferReal = Buffer.from(pdfBuffer);
+        const base64String = bufferReal.toString("base64");
+
+        return reply.send({
+          success: true,
+          type: "base64",
+          data: base64String,
+        });
+      }
 
       reply.header("Content-Type", "application/pdf");
       reply.header(
@@ -104,7 +118,7 @@ const start = async () => {
   try {
     await fastify.listen({ port: 3000, host: "0.0.0.0" });
     console.log(
-      "Servidor rodando! Acesse a documentação em: http://localhost:3000/docs",
+      "Servidor rodando! Acesse a documentação em: https://api-pdf-k1w9.onrender.com/docs",
     );
   } catch (err) {
     fastify.log.error(err);
