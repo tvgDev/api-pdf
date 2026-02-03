@@ -10,7 +10,7 @@ const fastify = Fastify({
 await fastify.register(fastifySwagger, {
   swagger: {
     info: {
-      title: "API de PDF (Microserviço)",
+      title: "API de PDF",
       description: "API para converter URLs em arquivos PDF usando Puppeteer.",
       version: "1.0.0",
     },
@@ -95,6 +95,10 @@ fastify.post(
     }
   },
 );
+
+fastify.get("/", async (request, reply) => {
+  return reply.redirect("/docs");
+});
 
 const start = async () => {
   try {
