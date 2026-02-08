@@ -3,10 +3,23 @@ import puppeteer from "puppeteer";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import fastifyJwt from "@fastify/jwt";
+import fastifyRateLimit from "@fastify/rate-limit";
 import "dotenv/config";
 
 const fastify = Fastify({
   logger: true,
+});
+
+await fastify.register(fastifyRateLimit, {
+  max: 100,
+  timeWindow: "1 minute",
+  errorResponseBuilder: (request, context) => {
+    return {
+      statusCode: 429,
+      error: "Too Many Requests",
+      message: `Limite de requisições por minuto excedido. Tente novamente mais tarde!`,
+    };
+  },
 });
 
 await fastify.register(fastifyJwt, {
@@ -55,6 +68,12 @@ await fastify.register(fastifySwaggerUi, {
 fastify.post(
   "/login",
   {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: "1 minute",
+      },
+    },
     schema: {
       description: "Faz login para receber o Token JWT",
       tags: ["Auth"],
@@ -101,6 +120,13 @@ fastify.post(
   "/gerar-pdf",
   {
     onRequest: [fastify.authenticate],
+
+    config: {
+      rateLimit: {
+        max: parseInt(process.env.QUANTIDADE_GERACAO_PDF) || 40,
+        timeWindow: "1 minute",
+      },
+    },
     schema: {
       description: "Gera um PDF (Requer Token JWT)",
       tags: ["PDF"],
