@@ -18,7 +18,7 @@ The application follows a secure and optimized request lifecycle to ensure perfo
 3. **Processing:** Valid requests proceed to the Puppeteer engine for HTML parsing and PDF rendering.
 4. **Response:** A successful HTTP 200 response delivers the PDF back to the client.
 
-![API Request Flow](./image_fa92c5.jpg)
+![API Request Flow](./assets/fluxo-api.jpg)
 
 ## 🛠️ Technologies Used
 
