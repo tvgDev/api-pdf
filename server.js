@@ -173,7 +173,7 @@ fastify.post(
       await page.setViewport({ width: 1920, height: 1080 });
       await page.emulateMediaType("screen");
 
-      await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+      await page.goto(url, { waitUntil: "load", timeout: 60000 });
 
       const pdfBuffer = await page.pdf({
         format: "A4",
